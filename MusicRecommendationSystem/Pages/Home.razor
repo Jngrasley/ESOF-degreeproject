@@ -1,0 +1,180 @@
+﻿@page "/"
+@layout MainLayout
+@using SpotifyAPI.Web;
+
+<style>
+    .bg {
+        background-image: url('images/background.png');
+        position:fixed;
+        width:100%;
+        height:100%;
+        top:0px;
+        left:0px;
+        z-index:1000;
+    }
+
+    .center-box {
+        background-color: black;
+        height: 100%;
+        width: 65%;
+        text-align: center;
+        opacity: 0.95;
+        top: 50%;
+        left: 50%;
+        position: fixed;
+        transform: translate(-50%, -50%);
+        padding: 20px;
+        border: 50px;
+        border-color: black;
+        color: white;
+    }
+
+    table, th, td {
+        border: 3px solid;
+        padding: 10px;
+        
+    }
+
+    .table-size {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .popup{
+        background-color: #ffffff;
+        width: 420px;
+        padding: 30px 40px;
+        position: absolute;
+        transform: translate(-50%,-50%);
+        left: 50%;
+        top: 50%;
+        border-radius: 8px;
+        font-family: "Poppins",sans-serif;
+        text-align: center;
+    }
+
+    .popup button{
+        display: block;
+        background-color: transparent;
+        font-size: 30px;
+        color: black;
+        border-radius: 100%;
+        width: 40px;
+        height: 40px;
+        border: none;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .popup h2{
+        color: black;
+        text-align: left
+    }
+
+    .popup p{
+        font-size: 14px;
+        text-align: left;
+        margin: 20px 0;
+        color: black;
+        line-height: 25px;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        padding-bottom: 20px;
+    }
+
+
+</style>
+
+<div class="bg">
+    <div class="center-box">
+        <h1>Music Recommendation System</h1>
+        <br/>
+        <h4 class="mb-2">Search for a song:</h4>
+        <input class="mb-2 "type="text"/>
+        <br/>
+        <input class="mb-2" type="button" value="Submit"/>
+
+        <p class="mb-2">OR</p>
+
+        <h4 class="mb-2">Upload mp3 file:</h4>
+        <input class="mb-2 "type="text" value="nameoffile.mp3" disabled/>
+        <input class="mb-2" type="button" value="Select file" />
+        <br/>
+        <input class="mb-3" type="button" value="Submit"/>
+        @if (helpVisible == true)
+        {
+            <table class="table-size mb-2">
+                <tr>
+                    <td>Song Title</td>
+                    <td>Artist</td>
+                    <td>Album</td>
+                    <td>Duration</td>
+                    <td>Similarity</td>
+                </tr>
+                @for (int i = 0; i < 10; i++)
+                {
+                    <tr>
+                        <td>@trackList.Items.ElementAt(i).Name</td>
+                        <td>@trackList.Items.ElementAt(i).Artists.FirstOrDefault().Name</td>
+                        <td>@trackList.Items.ElementAt(i).Album.Name</td>
+                        <td>@trackList.Items.ElementAt(i).DurationMs</td>
+                        <td>@trackList.Items.ElementAt(i).Popularity</td>
+                    </tr>
+                }
+            </table>
+        }
+
+        <input class="mb-2" type="button" value="Help" onclick="@ToggleHelpVisibility"/>
+
+       @* @if(helpVisible == true){
+            <div class="popup">
+                <button class="close" onclick="@ToggleHelpVisibility">&times</button>
+                <h2>Help</h2>
+                <p>
+                    Find song similarities by entering the name of a song in the first text box, or by uploading an mp3 file from your device.
+                </p>
+            
+            </div>
+        }*@
+    </div>
+</div>
+
+@code {
+    bool helpVisible;
+    SpotifyClient spotifyClient;
+    FullTrack track = new FullTrack();
+    SearchResponse searchResponse = new SearchResponse();
+    string firstResult = "test";
+    Paging<FullTrack, SearchResponse> trackList = new Paging<FullTrack, SearchResponse>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var config = SpotifyClientConfig
+        .CreateDefault()
+        .WithAuthenticator(new ClientCredentialsAuthenticator("24fedc0ed31b4ba5b18b1d98a5110cdc", "cee3f6e498ed44d89e629dd910e56a95"));
+        spotifyClient = new SpotifyClient(config);
+
+        //track = await spotifyClient.Tracks.Get("25YgkxnU4UzEG4ORni69Rw");
+        SearchRequest searchRequest = new SearchRequest(SearchRequest.Types.All, "New Face");
+        searchResponse = await spotifyClient.Search.Item(searchRequest);
+        trackList = searchResponse.Tracks;
+        firstResult = trackList.Items.FirstOrDefault().PreviewUrl;
+    }
+
+    async void ToggleHelpVisibility()
+    {
+        helpVisible = !helpVisible;
+        
+    }
+}
+

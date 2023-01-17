@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "7uRaJ6nCtoLjffPd9gDVc5KQvS2lhFhcL3aTZ11z6HH7qKL4iYho3ujX1d8USH1lqocJy1isIfldgh6sBcYpQQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\mjgra\\source\\repos\\MusicRecommendationSystem\\MusicRecommendationSystem.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\mjgra\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\mjgra\\.nuget\\packages\\spotifyapi.web\\7.0.0\\spotifyapi.web.7.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
