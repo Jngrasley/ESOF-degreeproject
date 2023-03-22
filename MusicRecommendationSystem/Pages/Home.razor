@@ -1,6 +1,7 @@
 ﻿@page "/"
 @layout MainLayout
 @using SpotifyAPI.Web;
+@using System.Data
 
 <style>
     .bg {
@@ -11,6 +12,15 @@
         top:0px;
         left:0px;
         z-index:1000;
+        font-family: monaco, monospace;
+    }
+
+    .combobox {
+        padding: 8px;
+        font-size: 16px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        width: 300px;
     }
 
     .center-box {
@@ -29,10 +39,23 @@
         color: white;
     }
 
+    .help-button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin-right: 80px;
+        margin-top: 100px;
+    }
+
+    .disclaimer {
+        position:absolute;
+        bottom: 0;
+    }
+
     table, th, td {
         border: 3px solid;
         padding: 10px;
-        
+        margin-bottom: 30px;
     }
 
     .table-size {
@@ -45,7 +68,7 @@
         display: none;
     }
 
-    .popup{
+    .popup {
         background-color: #ffffff;
         width: 420px;
         padding: 30px 40px;
@@ -54,7 +77,6 @@
         left: 50%;
         top: 50%;
         border-radius: 8px;
-        font-family: "Poppins",sans-serif;
         text-align: center;
     }
 
@@ -93,88 +115,195 @@
     }
 
 
+
+    html,body {
+        height: 100%;
+    }
+
+    .container {
+        position: absolute;
+        top: 30%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    table {
+        width: 800px;
+        border-collapse: collapse;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0,0,0,0.15);
+    }
+
+    th,td {
+        padding: 15px;
+        background-color: rgba(255,255,255,0.15);
+        color: #fff;
+    }
+
+    th {
+        text-align: left;
+        color: black;
+        border-width: 0;
+        background-color: rgba(255,255,255,0.005)
+    }
+
+    thead {
+        background-color: rgba(255,255,255,0.9);
+        color: black;
+    }
+
+    tbody {
+        background-color: rgba(255,255,255,0.05);
+    }
+
+    
+    td {
+        background-color: rgba(255,255,255,0.15);
+        border-width: 0;
+        
+    }
+
+    .white-button {
+        display: inline-block;
+        outline: none;
+        cursor: pointer;
+        font-weight: 500;
+        border-radius: 3px;
+        padding: 0 16px;
+        border-radius: 4px;
+        color: #000;
+        background: #fff;
+        line-height: 1.15;
+        font-size: 14px;
+        height: 36px;
+        word-spacing: 0px;
+        letter-spacing: .0892857143em;
+        text-decoration: none;
+        min-width: 64px;
+        border: none;
+        text-align: center;
+        box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
+        transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .white-button:hover {
+        background: #d1d1d1;
+        box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);
+    }
+
+
 </style>
 
 <div class="bg">
-    <div class="center-box">
-        <h1>Music Recommendation System</h1>
-        <br/>
-        <h4 class="mb-2">Search for a song:</h4>
-        <input class="mb-2 "type="text"/>
-        <br/>
-        <input class="mb-2" type="button" value="Submit"/>
 
-        <p class="mb-2">OR</p>
-
-        <h4 class="mb-2">Upload mp3 file:</h4>
-        <input class="mb-2 "type="text" value="nameoffile.mp3" disabled/>
-        <input class="mb-2" type="button" value="Select file" />
-        <br/>
-        <input class="mb-3" type="button" value="Submit"/>
-        @if (helpVisible == true)
-        {
-            <table class="table-size mb-2">
-                <tr>
-                    <td>Song Title</td>
-                    <td>Artist</td>
-                    <td>Album</td>
-                    <td>Duration</td>
-                    <td>Similarity</td>
-                </tr>
-                @for (int i = 0; i < 10; i++)
-                {
-                    <tr>
-                        <td>@trackList.Items.ElementAt(i).Name</td>
-                        <td>@trackList.Items.ElementAt(i).Artists.FirstOrDefault().Name</td>
-                        <td>@trackList.Items.ElementAt(i).Album.Name</td>
-                        <td>@trackList.Items.ElementAt(i).DurationMs</td>
-                        <td>@trackList.Items.ElementAt(i).Popularity</td>
-                    </tr>
-                }
-            </table>
-        }
-
-        <input class="mb-2" type="button" value="Help" onclick="@ToggleHelpVisibility"/>
-
-       @* @if(helpVisible == true){
-            <div class="popup">
-                <button class="close" onclick="@ToggleHelpVisibility">&times</button>
-                <h2>Help</h2>
-                <p>
-                    Find song similarities by entering the name of a song in the first text box, or by uploading an mp3 file from your device.
-                </p>
+        <div class="center-box">
+            <h1 class="mb-2">Machine Learning Based Music Recommendation System</h1>
+            <h5 class="mb-2">Created By: Jack Fiorot, Mark Grandell, Jarrod Grasley, and Paul Stoppel</h5>
+            <input class="mb-2 help-button white-button" type="button" value="Help" onclick="@ToggleHelpVisibility" />
+            <br/>
+            @if (GridVisible == false)
+            {
+                <div class="container">
+                    <h4 class="mb-2">Search for a song:</h4>
+                    <input type="text" name="combobox" @bind-value="@UserSelectedSong.SongAndArtist" placeholder="Select..." list="List" class="combobox mb-2">
+                    <datalist id="List">
+                        @foreach(Song song in SongListAll)
+                        {
+                            <option value="@song.SongAndArtist" />
+                        }
+              
+                    </datalist>
+                    <br/>
+                    <input class="mb-2 white-button" onclick="@ToggleGridVisibility" type="button" value="Submit" />
+                </div>
+            }
+            @if (GridVisible == true)
+            {
+                <h4 class="mb-3">Most Similar Songs To: @UserSelectedSong.SongAndArtist</h4>
+                    <table class="table-size mb-3">
+                        <thead>
+                            <tr>
+                                <th>Song Title</th>
+                                <th>Artist</th>
+                                <th>Album</th>
+                                <th>Genre</th>
+                            </tr>
+                        </thead>
+                        @for (int i = 0; i < 9; i++)
+                        {
+                            <tr>
+                                <td>@SongListSimilar.ElementAt(i).SongTitle</td>
+                                <td>@SongListSimilar.ElementAt(i).Artist</td>
+                                <td>@SongListSimilar.ElementAt(i).Album</td>
+                                <td>@SongListSimilar.ElementAt(i).Genre</td>
+                            </tr>
+                        }
+                    </table>
+                <input class="mb-2 white-button" type="button" value="Back" onclick="@BackButton" />
+            }
+       
+            @if(helpVisible == true){
+                <div class="popup">
+                    <button class="close" onclick="@ToggleHelpVisibility">&times</button>
+                    <h2>Help</h2>
+                    <p>
+                        Find song similarities by entering the name of a song in the combo box.
+                    </p>
             
-            </div>
-        }*@
-    </div>
+                </div>
+            }
+        </div>
 </div>
 
 @code {
     bool helpVisible;
-    SpotifyClient spotifyClient;
-    FullTrack track = new FullTrack();
-    SearchResponse searchResponse = new SearchResponse();
-    string firstResult = "test";
-    Paging<FullTrack, SearchResponse> trackList = new Paging<FullTrack, SearchResponse>();
+    bool GridVisible;
+    SongService songService = new SongService();
+    List<Song> SongListAll = new List<Song>();
+    List<Song> SongListSimilar = new List<Song>();
+    Song UserSelectedSong = new Song();
 
     protected override async Task OnInitializedAsync()
     {
-        var config = SpotifyClientConfig
-        .CreateDefault()
-        .WithAuthenticator(new ClientCredentialsAuthenticator("24fedc0ed31b4ba5b18b1d98a5110cdc", "cee3f6e498ed44d89e629dd910e56a95"));
-        spotifyClient = new SpotifyClient(config);
-
-        //track = await spotifyClient.Tracks.Get("25YgkxnU4UzEG4ORni69Rw");
-        SearchRequest searchRequest = new SearchRequest(SearchRequest.Types.All, "New Face");
-        searchResponse = await spotifyClient.Search.Item(searchRequest);
-        trackList = searchResponse.Tracks;
-        firstResult = trackList.Items.FirstOrDefault().PreviewUrl;
+        SongListAll = songService.GetAllSongs();
+        foreach(Song song in SongListAll)
+        {
+            song.SongAndArtist = song.SongTitle + " - " + song.Artist;
+        }
     }
 
     async void ToggleHelpVisibility()
     {
         helpVisible = !helpVisible;
-        
+    }
+
+    void ToggleGridVisibility()
+    {
+        if(helpVisible == true)
+        {
+            helpVisible = !helpVisible;
+        }
+        foreach(Song song in SongListAll)
+        {
+            if(song.SongAndArtist == UserSelectedSong.SongAndArtist)
+            {
+                UserSelectedSong.SongTitle = song.SongTitle;
+                UserSelectedSong.Artist = song.Artist;
+                UserSelectedSong.Album = song.Album;
+                UserSelectedSong.Genre = song.Genre;
+                UserSelectedSong.Cluster = song.Cluster;
+                UserSelectedSong.SongAndArtist = song.SongAndArtist;
+            }
+        }
+        SongListSimilar = songService.GetSimilarSongs(UserSelectedSong.Cluster, UserSelectedSong.SongTitle);
+
+        GridVisible = !GridVisible;
+
+    }
+
+    void BackButton()
+    {
+        GridVisible = !GridVisible;
     }
 }
 
