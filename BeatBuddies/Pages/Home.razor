@@ -1,0 +1,465 @@
+﻿@page "/"
+@layout MainLayout
+@using Accord.Math;
+@using Accord.Math.Distances;
+@using System.Data
+
+<!--css styles-->
+<style>
+    .bg {
+        background-image: url('images/background.png');
+        position:fixed;
+        width:100%;
+        height:100%;
+        top:0px;
+        left:0px;
+        z-index:1000;
+        font-family: monaco, monospace;
+        overflow: auto;
+    }
+
+
+    .progress-bar {
+		width: 100%;
+		background-color: #e0e0e0;
+		padding: 3px;
+		border-radius: 3px;
+		box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
+	}
+			
+	.progress-bar-fill {
+		display: block;
+		height: 22px;
+        background-color: #0593f5;
+        border-radius: 3px;
+				
+		transition: width 500ms ease-in-out;
+	}
+
+    .combobox {
+        padding: 8px;
+        font-size: 16px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        width: 500px;
+    }
+
+    .center-box {
+        background-color: black;
+        height: 100%;
+        width: 75%;
+        text-align: center;
+        opacity: 0.95;
+        top: 50%;
+        left: 50%;
+        position: fixed;
+        transform: translate(-50%, -50%);
+        padding: 20px;
+        border: 50px;
+        border-color: black;
+        color: white;
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+
+    .help-button {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        margin-left: 30px;
+        margin-bottom: 60px;
+    }
+
+    .disclaimer {
+        position:absolute;
+        bottom: 0;
+    }
+
+    table, th, td {
+        border: 3px solid;
+        padding: 10px;
+        margin-bottom: 30px;
+    }
+
+    .table-size {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .popup {
+        background-color: #ffffff;
+        width: 420px;
+        padding: 30px 40px;
+        position: absolute;
+        transform: translate(-50%,-50%);
+        left: 50%;
+        top: 50%;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .popup button{
+        display: block;
+        background-color: transparent;
+        font-size: 30px;
+        color: black;
+        border-radius: 100%;
+        width: 40px;
+        height: 40px;
+        border: none;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .popup h2{
+        color: black;
+        text-align: left
+    }
+
+    .popup p{
+        font-size: 14px;
+        text-align: left;
+        margin: 20px 0;
+        color: black;
+        line-height: 25px;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        padding-bottom: 20px;
+    }
+
+    html,body {
+        height: 100%;
+    }
+
+    .container {
+        position: absolute;
+        top: 35%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    table {
+        width: 800px;
+        border-collapse: collapse;
+        box-shadow: 0 0 20px #0593f5;
+    }
+
+    th,td {
+        padding: 15px;
+        background-color: rgba(255,255,255,0.15);
+        color: #fff;
+    }
+
+    th {
+        text-align: left;
+        color: #fff;
+        border-width: 0;
+        background-color: rgba(255,255,255,0.005);
+    }
+
+    thead {
+        background-color: #0593f5;
+        color: #fff;
+    }
+
+    tbody {
+        background-color: rgba(255,255,255,0.05);
+    }
+
+    
+    td {
+        background-color: rgba(255,255,255,0.15);
+        border-width: 0;
+        
+    }
+
+    audio {
+        filter: sepia(20%) saturate(70%) grayscale(1) contrast(99%) invert(12%);
+        width: 200px;
+        height: 40px;
+    }
+
+    .wrapper {
+        width: 150px;
+    }
+
+    .white-button {
+        display: inline-block;
+        outline: none;
+        cursor: pointer;
+        font-weight: 500;
+        border-radius: 3px;
+        padding: 0 16px;
+        border-radius: 4px;
+        color: #fff;
+        background: #0593f5;
+        line-height: 1.15;
+        font-size: 14px;
+        height: 36px;
+        word-spacing: 0px;
+        letter-spacing: .0892857143em;
+        text-decoration: none;
+        min-width: 64px;
+        border: none;
+        text-align: center;
+        box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
+        transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .black-button {
+        display: inline-block;
+        outline: none;
+        cursor: pointer;
+        font-weight: 500;
+        border-radius: 3px;
+        padding: 0 16px;
+        border-radius: 4px;
+        color: #fff;
+        background: #000;
+        line-height: 1.15;
+        font-size: 14px;
+        height: 36px;
+        word-spacing: 0px;
+        letter-spacing: .0892857143em;
+        text-decoration: none;
+        min-width: 64px;
+        border: none;
+        text-align: center;
+        box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
+        transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .white-button:hover {
+        background: #d1d1d1;
+        box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);
+    }
+
+    img {
+        width: 30%;
+        height: auto;
+    }
+
+
+</style>
+
+<div class="bg">
+    <input class="mb-2 help-button black-button" type="button" value="Help" onclick="@ToggleHelpVisibility" />
+        
+        <!--main display area-->
+        <div class="center-box">
+            <img src="images/BeatBuddiesLogo.png" >
+            
+            <br/>
+            @if (GridVisible == false)
+            {
+                <!--search box and submit button displayed when GridVisible is false-->
+                <div class="container">
+                    <h4 class="mb-2">Search for a song:</h4>
+                <input type="text" name="combobox" @bind-value="@UserSelectedSong.SongAndArtist" placeholder="Enter a song title or artist, then select a song..." list="List" class="combobox mb-2">
+                    <datalist id="List">
+                        @foreach(Song song in SongListAll)
+                        {
+                            <option value="@song.SongAndArtist" />
+                        }
+              
+                    </datalist>
+                    <br/>
+                    <input class="mb-2 white-button" onclick="@ToggleGridVisibility" type="button" value="Submit" />
+                </div>
+            }
+            @if (GridVisible == true)
+            {
+                <!--grid with similar songs displayed when GridVisible is true-->
+                <div style="width: 90%; margin-left: auto; margin-right:auto;">
+                    <input class="mb-2 white-button" type="button" value="Back" onclick="@BackButton"/>
+                </div>
+                <div style="width: 90%; margin-left: auto; margin-right:auto;">
+                    <h4 style="display:inline-block" class="mb-3">Most Similar Songs To: @UserSelectedSong.SongAndArtist</h4>
+
+                </div>
+                <div class="mb-3" style="width: 90%; margin-left: auto; margin-right:auto;">
+                <audio controls style="width: 300px">
+                        <source src="@UserSelectedSong.PreviewURL" type="audio/mp3">
+                    </audio>
+                </div>
+
+                <!--table start-->
+                <table class="table-size mb-3">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Song Title</th>
+                            <th>Artist</th>
+                            <th>Album</th>
+                            <th>Genre</th>
+                            <th>Similarity</th>
+                            <th>Preview</th>
+                        </tr>
+                    </thead>
+                    @for (int i = 0; i < ListLength; i++)
+                    {
+                        <tr>
+                            <td>@(i+1)</td>
+                            <td>@SongListSimilarSorted.ElementAt(i).SongTitle</td>
+                            <td>@SongListSimilarSorted.ElementAt(i).Artist</td>
+                            <td>@SongListSimilarSorted.ElementAt(i).Album</td>
+                            <td>@SongListSimilarSorted.ElementAt(i).Genre</td>
+                            <td>
+                                <div class="wrapper">
+                                    <div class="progress-bar">
+                                    <span class="progress-bar-fill" style="width: @((Math.Round((decimal)(100 * (1 - (SongListSimilarSorted.ElementAt(i).Distance / denominator))))) >= 0 ? Math.Round((decimal)(100 * (1 - (SongListSimilarSorted.ElementAt(i).Distance / denominator)))) : 1)%">
+                                        @((Math.Round((decimal)(100 * (1 - (SongListSimilarSorted.ElementAt(i).Distance / denominator))))) >= 0 ? Math.Round((decimal)(100 * (1 - (SongListSimilarSorted.ElementAt(i).Distance / denominator)))) : 1)%
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                            </td>
+                            <td>
+                                <audio controls>
+                                    <source src="@SongListSimilarSorted.ElementAt(i).PreviewURL" type="audio/mp3">
+                                </audio>
+                            </td>
+                        </tr>
+                    }
+                </table>
+                <!--table end-->
+            }
+       
+            @if(helpVisible == true){
+                <!--help popup-->
+                <div class="popup">
+                    <button class="close" onclick="@ToggleHelpVisibility">&times</button>
+                    <h2>Help</h2>
+                    <p>
+                        Enter the song title or artist name in the combo box and select a song to find similar songs.
+                    </p>
+            
+                </div>
+            }
+        </div>
+</div>
+
+
+
+@code {
+    //variables
+    bool helpVisible;
+    bool GridVisible;
+    SongService songService = new SongService();
+    List<Song> SongListAll = new List<Song>();
+    List<Song> SongListSimilar = new List<Song>();
+    Song UserSelectedSong = new Song();
+    Dictionary<string, double> DistanceDict = new Dictionary<string, double>(); 
+    List<Song> SongListSimilarSorted = new List<Song>();
+    int ListLength;
+    double? denominator = 0;
+
+    //runs on startup
+    protected override async Task OnInitializedAsync()
+    {
+        //retrieve songs from db and set the SongAndArtist attribute
+        SongListAll = songService.GetAllSongs();
+        foreach(Song song in SongListAll)
+        {
+            song.SongAndArtist = song.SongTitle + " - " + song.Artist;
+        }
+    }
+
+    //toggles help visibility
+    async void ToggleHelpVisibility()
+    {
+        helpVisible = !helpVisible;
+    }
+
+    //toggles grid visibility
+    void ToggleGridVisibility()
+    {
+        //if input is valid...
+        if (UserSelectedSong.SongAndArtist != null && UserSelectedSong.SongAndArtist != "")
+        {
+            int counter = 0;
+            //close help if open
+            if (helpVisible == true)
+            {
+                helpVisible = !helpVisible;
+            }
+            //finds selected song and gets all of its attributes
+            foreach (Song song in SongListAll)
+            {
+                if (song.SongAndArtist == UserSelectedSong.SongAndArtist)
+                {
+                    UserSelectedSong = song;
+                    counter++;
+                }
+            }
+            //if song is found...
+            if (counter > 0) {
+                //retrieve list of similar songs and remove input song
+                SongListSimilar = songService.GetSimilarSongs(UserSelectedSong.Cluster, UserSelectedSong.SubCluster);
+                SongListSimilar.RemoveAll(x => x.TrackID == UserSelectedSong.TrackID);
+                
+                //perform distance calculation then sort list by distance
+                DistanceCalculation();
+                SongListSimilarSorted = SongListSimilar.OrderBy(s => s.Distance).ToList();
+
+                //calculate average distance
+                int similarCounter = 0;
+                double? tempDist = 0;
+                foreach (Song song in SongListSimilarSorted)
+                {
+                    if (song.Distance != null)
+                    {
+                        tempDist += song.Distance;
+                        similarCounter++;
+                    }
+                }
+                denominator = tempDist / similarCounter;
+
+                //if there are less than 10 songs in the cluster, only display cluster size
+                if (SongListSimilarSorted.Count() >= 10)
+                {
+                    ListLength = 10;
+                }
+                else if (SongListSimilarSorted.Count() < 10)
+                {
+                    ListLength = SongListSimilarSorted.Count();
+                }
+                GridVisible = true;
+            }
+        }
+
+    }
+
+    //distance calculation
+    public void DistanceCalculation()
+    {
+        //calculates euclidian distance for each song in list and sets the distance value for each
+        double[] inputSong = { UserSelectedSong.Danceability, UserSelectedSong.Energy, UserSelectedSong.Key, UserSelectedSong.Loudness, UserSelectedSong.Speechiness, UserSelectedSong.Acousticness, UserSelectedSong.Instrumentalness, UserSelectedSong.Liveness, UserSelectedSong.Valence, UserSelectedSong.Tempo, UserSelectedSong.TimeSignature, UserSelectedSong.ZeroCrossing, UserSelectedSong.MFCCSMax, UserSelectedSong.MFCCSMin, UserSelectedSong.MFCCSMean, UserSelectedSong.MFCCSMedian, UserSelectedSong.RMS, UserSelectedSong.BPM, UserSelectedSong.RolloffMax, UserSelectedSong.RolloffMin, UserSelectedSong.ChromaMedian, UserSelectedSong.ChromaMean, UserSelectedSong.ChromaMin, UserSelectedSong.ChromaMax, UserSelectedSong.a, UserSelectedSong.b, UserSelectedSong.c, UserSelectedSong.d, UserSelectedSong.e, UserSelectedSong.f, UserSelectedSong.g, UserSelectedSong.h, UserSelectedSong.i, UserSelectedSong.j, UserSelectedSong.k, UserSelectedSong.l, UserSelectedSong.m, UserSelectedSong.n, UserSelectedSong.o, UserSelectedSong.p };
+        foreach (Song song in SongListSimilar)
+        {
+            double[] otherSong = { song.Danceability, song.Energy, song.Key, song.Loudness, song.Speechiness, song.Acousticness, song.Instrumentalness, song.Liveness, song.Valence, song.Tempo, song.TimeSignature, song.ZeroCrossing, song.MFCCSMax, song.MFCCSMin, song.MFCCSMean, song.MFCCSMedian, song.RMS, song.BPM, song.RolloffMax, song.RolloffMin, song.ChromaMedian, song.ChromaMean, song.ChromaMin, song.ChromaMax, song.a, song.b, song.c, song.d, song.e, song.f, song.g, song.h, song.i, song.j, song.k, song.l, song.m, song.n, song.o, song.p };
+            Euclidean euclidean = new Euclidean();
+            double cosineDistance = euclidean.Distance(inputSong, otherSong);
+
+            song.Distance = cosineDistance;
+        }
+    }
+
+    //navigates back to search box
+    void BackButton()
+    {
+        UserSelectedSong = new();
+        GridVisible = false;
+    }
+}
+
